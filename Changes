@@ -1,0 +1,12 @@
+Revision history for Perl extension MySQL-Dump-Parser-XS
+
+{{$NEXT}}
+
+0.02 2014-11-25T10:26:41Z
+
+    - Fixed repository url.
+
+0.01 2014-11-25T07:03:59Z
+
+    - original version
+
