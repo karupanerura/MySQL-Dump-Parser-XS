@@ -417,7 +417,7 @@ char* parse_insert_values (pTHX_ HV* state, register char* p, AV* ret) {
 
         // skip
         while (*p != '\0' && *p != ',' && *p != ')') p++;
-        if (*p == '\0') return;
+        if (*p == '\0') return p;
         SKIP_WSPACE(p);
         if (*p == ',') {
           column_id++;

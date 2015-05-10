@@ -32,7 +32,7 @@
   HV* hash = hv;                              \
   hv_iterinit(hash);                          \
   HE* entry;                                  \
-  while (entry = hv_iternext(hash)) {         \
+  while ((entry = hv_iternext(hash))) {       \
     block;                                    \
   }                                           \
 }

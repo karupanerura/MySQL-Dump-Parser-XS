@@ -3,11 +3,11 @@
 #include "debug.h"
 #include "xsutil.h"
 
-inline HV* newState (pTHX) {
+HV* newState (pTHX) {
   return initState(aTHX_ newHV_mortal());
 }
 
-inline HV* initState (pTHX_ HV* state) {
+HV* initState (pTHX_ HV* state) {
   XSUTIL_HV_STORE_REF(state,   "schema",   (SV*)newHV_mortal());
   XSUTIL_HV_STORE_NOINC(state, "table",    &PL_sv_undef);
   XSUTIL_HV_STORE(state,       "context",  XSUTIL_NEW_SVIV_MORTAL(CONTEXT_GLOBAL));
@@ -95,20 +95,20 @@ void restore_context (pTHX_ HV* state) {
   }
 }
 
-inline IV get_parser_context (pTHX_ HV* state) {
+IV get_parser_context (pTHX_ HV* state) {
   return SvIV(_get_parser_context(aTHX_ state));
 }
 
-inline IV get_nest (pTHX_ HV* state) {
+IV get_nest (pTHX_ HV* state) {
   return SvIV(_get_nest(aTHX_ state));
 }
 
-inline void incr_nest (pTHX_ HV* state) {
+void incr_nest (pTHX_ HV* state) {
   SV* nest = _get_nest(aTHX_ state);
   sv_setiv(nest, SvIV(nest) + 1);
 }
 
-inline void decr_nest (pTHX_ HV* state) {
+void decr_nest (pTHX_ HV* state) {
   SV* nest = _get_nest(aTHX_ state);
   sv_setiv(nest, SvIV(nest) - 1);
 }
