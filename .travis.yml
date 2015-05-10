@@ -8,7 +8,7 @@ perl:
   - "5.20"
 before_install:
   - cpanm --quiet --notest --skip-satisfied Devel::Cover Devel::Cover::Report::Coveralls
-  - cpanm --installdeps --with-develop .
+  - cpanm --installdeps --with-develop --quiet --notest --skip-satisfied .
   - cover -delete
 env:
   - HARNESS_PERL_SWITCHES="-MDevel::Cover=+ignore,inc"
