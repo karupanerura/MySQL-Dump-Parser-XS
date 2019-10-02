@@ -25,7 +25,41 @@ MySQL::Dump::Parser::XS - mysqldump SQL parser
 
 # DESCRIPTION
 
-MySQL::Dump::Parser::XS is ...
+MySQL::Dump::Parser::XS is `mysqldump` parser written in C/XS.
+This module provides schema/data loader from `mysqldump` output SQL directly. No need `mysqld`.
+
+# METHODS
+
+## CLASS METHODS
+
+### `new()`
+
+Creates a new parser instance.
+This manages parsing states amd table's meta information in the parsing context.
+
+## INSTANCE METHODS
+
+### `reset()`
+
+Re-initialize parsing context.
+
+### `parse($line)`
+
+Parse a line of `mysqldump` output.
+
+### `current_target_table()`
+
+Get current target table name in the parsing context.
+
+### `columns($table_name)`
+
+Get column names as LIST for the table of `$table_name`.
+This method can get columns from already parsed tables only.
+
+### `tables()`
+
+Get table names as LIST.
+This method can get tables from already parsed tables only.
 
 # LICENSE
 
