@@ -13,6 +13,8 @@ __END__
 
 =encoding utf-8
 
+=for stopwords mysqldump
+
 =head1 NAME
 
 MySQL::Dump::Parser::XS - mysqldump SQL parser
@@ -49,7 +51,7 @@ This module provides schema/data loader from C<mysqldump> output SQL directly. N
 =head3 C<new()>
 
 Creates a new parser instance.
-This manages parsing states amd table's meta information in the parsing context.
+This manages parsing states and table's meta information in the parsing context.
 
 =head2 INSTANCE METHODS
 
