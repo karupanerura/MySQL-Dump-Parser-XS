@@ -371,7 +371,7 @@ char* parse_insert_values (pTHX_ HV* state, register char* p, AV* ret) {
         SV* column = *column_ref;
         DEBUG_OUT("key: %s\n", SvPV_nolen(column));
 
-        // extruct and store value
+        // extract and store value
         if (IS_NULL_STR(p)) {
           // null value
           p += 4;
@@ -384,14 +384,43 @@ char* parse_insert_values (pTHX_ HV* state, register char* p, AV* ret) {
           char* mark   = ++p;
           SV*   value  = NULL;
           while (*p != '\0' && *p != symbol) {
+            // handle mySQL string literals
             if (*p == '\\') {
+              char c[2] = {'\0', '\0'};
+
               if (value == NULL) {
                 value = newSVpvn(mark, p - mark);
               }
               else {
                 sv_catpvn(value, mark, p - mark);
               }
-              mark = ++p;
+
+              p++;
+              switch (*p) {
+              case '0':
+                c[0] = '\0';
+                break;
+              case 'b':
+                c[0] = '\b';
+                break;
+              case 'n':
+                c[0] = '\n';
+                break;
+              case 'r':
+                c[0] = '\r';
+                break;
+              case 't':
+                c[0] = '\t';
+                break;
+              case 'Z':
+                c[0] = '\x1A';
+                break;
+              default:
+                c[0] = *p;
+                break;
+              }
+              sv_catpvn(value, c, 1);
+              mark = p + 1;
             }
             p++;
           }
