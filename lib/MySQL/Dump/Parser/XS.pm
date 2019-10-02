@@ -28,7 +28,7 @@ MySQL::Dump::Parser::XS - mysqldump SQL parser
     while (my $line = <$fh>) {
         my @rows  = $parser->parse($line);
         my $table = $parser->current_target_table();
-        push @{ $rows{$table} } => @rows;
+        push @{ $rows{$table} } => @rows if $table;
     }
 
     for my $table ($parser->tables()) {
