@@ -1,0 +1,22 @@
+name: test
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        perl:
+          - "5.30.0"
+          - "5.12.1"
+    name: Perl ${{ matrix.perl }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+      - run: |
+          cpanm --installdeps --with-develop --quiet --notest --skip-satisfied .
+          perl Build.PL
+          ./Build
+          ./Build test
