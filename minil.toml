@@ -1,6 +1,7 @@
 name     = "MySQL-Dump-Parser-XS"
-badges   = []
+badges   = ['github-actions']
 c_source = ["src"]
+module_maker = "ModuleBuild"
 
 [XSUtil]
 needs_compiler_c99  = 1

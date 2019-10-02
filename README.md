@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/karupanerura/MySQL-Dump-Parser-XS.svg?branch=master)](https://travis-ci.org/karupanerura/MySQL-Dump-Parser-XS)
+[![Actions Status](https://github.com/karupanerura/MySQL-Dump-Parser-XS/workflows/test/badge.svg)](https://github.com/karupanerura/MySQL-Dump-Parser-XS/actions)
 # NAME
 
 MySQL::Dump::Parser::XS - mysqldump SQL parser
