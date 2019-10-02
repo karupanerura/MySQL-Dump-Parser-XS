@@ -77,6 +77,13 @@ This method can get columns from already parsed tables only.
 Get table names as LIST.
 This method can get tables from already parsed tables only.
 
+=head1 FAQ
+
+=head3 How to get column details?
+
+Some C<mysqldump> output include poor table schema information only.
+So if you just need rich table schema information, I suggest using L<DBIx::Inspector> to solve the problem.
+
 =head1 LICENSE
 
 Copyright (C) karupanerura.

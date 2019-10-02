@@ -35,7 +35,7 @@ This module provides schema/data loader from `mysqldump` output SQL directly. No
 ### `new()`
 
 Creates a new parser instance.
-This manages parsing states amd table's meta information in the parsing context.
+This manages parsing states and table's meta information in the parsing context.
 
 ## INSTANCE METHODS
 
@@ -60,6 +60,13 @@ This method can get columns from already parsed tables only.
 
 Get table names as LIST.
 This method can get tables from already parsed tables only.
+
+# FAQ
+
+### How to get column details?
+
+Some `mysqldump` output include poor table schema information only.
+So if you just need rich table schema information, I suggest using [DBIx::Inspector](https://metacpan.org/pod/DBIx::Inspector) to solve the problem.
 
 # LICENSE
 
