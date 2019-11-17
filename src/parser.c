@@ -31,11 +31,11 @@ AV* parse (pTHX_ HV* state, register char* p) {
         p = parse_block_comment(aTHX_ state, p);
         break;
       case CONTEXT_INSERT_INTO:
-        DEBUG_OUT("context: INSER INTO\n");
+        DEBUG_OUT("context: INSERT INTO\n");
         p = parse_insert_into(aTHX_ state, p);
         break;
       case CONTEXT_INSERT_VALUES:
-        DEBUG_OUT("context: INSER INTO (values)\n");
+        DEBUG_OUT("context: INSERT INTO (values)\n");
         if (! ret) {
           ret = newAV_mortal();
         }
