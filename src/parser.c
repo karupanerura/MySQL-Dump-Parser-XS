@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "parser.h"
 #include "macro.h"
 #include "state.h"
@@ -364,7 +365,6 @@ char* parse_insert_values (pTHX_ HV* state, register char* p, AV* ret) {
       p++;
 
       I32 column_id = 0;
-      int have_binary_literal = 0;
       while (*p != '\0' && *p != ')') {
         // get column name
         SV** column_ref = XSUTIL_AV_FETCH(columns, column_id);
@@ -372,96 +372,10 @@ char* parse_insert_values (pTHX_ HV* state, register char* p, AV* ret) {
         SV* column = *column_ref;
         DEBUG_OUT("key: %s\n", SvPV_nolen(column));
 
-      Again:
         // extract and store value
-        if (IS_NULL_STR(p)) {
-          if (have_binary_literal)
-            croak("Invalid use of '_binary' keyword.");
-
-          // null value
-          p += 4;
-          DEBUG_OUT("value: (NULL)\n");
-          XSUTIL_HV_STORE_ENT_NOINC(row, column, &PL_sv_undef);
-        }
-        else if (IS__binary(p)) {
-          if (have_binary_literal)
-            croak("Found duplicated '_binary' keyword.");
-
-          // skip '_binary' character set introducer for string literals
-          p += 7;
-          SKIP_WSPACE(p);
-          have_binary_literal = 1;
-          goto Again;
-        }
-        else if (*p == '\'' || *p == '"') {
-          // string
-          char  symbol = *p;
-          char* mark   = ++p;
-          SV*   value  = NULL;
-          while (*p != '\0' && *p != symbol) {
-            // handle mySQL string literals
-            if (*p == '\\') {
-              char c[2] = {'\0', '\0'};
-
-              if (value == NULL) {
-                value = newSVpvn(mark, p - mark);
-              }
-              else {
-                sv_catpvn(value, mark, p - mark);
-              }
-
-              p++;
-              switch (*p) {
-              case '0':
-                c[0] = '\0';
-                break;
-              case 'b':
-                c[0] = '\b';
-                break;
-              case 'n':
-                c[0] = '\n';
-                break;
-              case 'r':
-                c[0] = '\r';
-                break;
-              case 't':
-                c[0] = '\t';
-                break;
-              case 'Z':
-                c[0] = '\x1A';
-                break;
-              default:
-                c[0] = *p;
-                break;
-              }
-              sv_catpvn(value, c, 1);
-              mark = p + 1;
-            }
-            p++;
-          }
-          if (value == NULL) {
-            value = newSVpvn(mark, p - mark);
-          }
-          else {
-            sv_catpvn(value, mark, p - mark);
-          }
-          DEBUG_OUT("value: %s (%sstring)\n",
-                    SvPV_nolen(value),
-                    have_binary_literal ? "binary " : "");
-          XSUTIL_HV_STORE_ENT_NOINC(row, column, value);
-          have_binary_literal = 0;
-        }
-        else {
-          if (have_binary_literal)
-            croak("Invalid use of '_binary' keyword.");
-
-          // normal value
-          char* mark = p;
-          while (*p != '\0' && *p != ',' && *p != ')') p++;
-
-          // store
-          SV* value = newSVpvn(mark, p - mark);
-          DEBUG_OUT("value: %s(normal value)\n", SvPV_nolen(value));
+        SV *value = NULL;
+        p = parse_single_value(&value, p);
+        if (value != NULL) {
           XSUTIL_HV_STORE_ENT_NOINC(row, column, value);
         }
 
@@ -490,3 +404,181 @@ char* parse_insert_values (pTHX_ HV* state, register char* p, AV* ret) {
   return p;
 }
 
+char* parse_single_value (pTHX_ SV** ret, register char* p) {
+  assert(ret != NULL);
+
+  // null value
+  if (IS_NULL_STR(p)) {
+    p += 4;
+    DEBUG_OUT("value: (NULL)\n");
+    *ret = &PL_sv_undef;
+    return p;
+  }
+
+  // with Character Set Introducers
+  // SEE: https://dev.mysql.com/doc/refman/8.0/en/charset-introducer.html
+  enum literal_type lt = NORMAL_LITERAL;
+  if (*p == '_') {
+    char* mark = p;
+    while (*p != '\0' && *p != '\'' && *p != '"' && !IS_WSPACE(p)) p++;
+    DEBUG_OUT("charset introducer: %.*s\n", p - mark, mark);
+
+    // TODO: apply charset introducer
+
+    SKIP_WSPACE(p);
+
+    // binary/hex literal
+    if (*p == 'b') {
+      lt = BINARY_LITERAL;
+      p++;
+    } else if (*p == 'X') {
+      lt = HEX_LITERAL;
+      p++;
+    }
+  }
+
+  // pure value
+  if (*p == '\'' || *p == '"') {
+    char symbol = *p;
+    // string
+    if (lt == NORMAL_LITERAL) {
+      char* mark  = ++p;
+      SV*   value = NULL;
+      while (*p != '\0' && *p != symbol) {
+        // handle MySQL string literals
+        if (*p == '\\') {
+          char c[2] = {'\0', '\0'};
+
+          if (value == NULL) {
+            value = newSVpvn(mark, p - mark);
+          }
+          else {
+            sv_catpvn(value, mark, p - mark);
+          }
+
+          p++;
+          switch (*p) {
+            case '0':
+              c[0] = '\0';
+              break;
+            case 'b':
+              c[0] = '\b';
+              break;
+            case 'n':
+              c[0] = '\n';
+              break;
+            case 'r':
+              c[0] = '\r';
+              break;
+            case 't':
+              c[0] = '\t';
+              break;
+            case 'Z':
+              c[0] = '\x1A';
+              break;
+            default:
+              c[0] = *p;
+              break;
+          }
+          sv_catpvn(value, c, 1);
+          mark = p + 1;
+        }
+        p++;
+      }
+      if (value == NULL) {
+        value = newSVpvn(mark, p - mark);
+      }
+      else {
+        sv_catpvn(value, mark, p - mark);
+      }
+      *ret = value;
+      DEBUG_OUT("value: %s (string)\n", SvPV_nolen(value));
+    } else if (lt == BINARY_LITERAL) {
+      SV* value = newSV(0);
+      while (*p != '\0' && *p != symbol) {
+        char v = 0;
+        for (int i = 0; i < 8; i++) {
+          if (IS_NOT_BINARY_LITERAL_CHAR(*p)) {
+            croak("Unexpected binary literal charactor:%c", *p);
+          }
+
+          char n = parse_literal_numeric(*p);
+          v <<= 1;
+          v |= n;
+          p++;
+        }
+        sv_catpvn(value, &v, 1);
+      }
+      *ret = value;
+      DEBUG_OUT("value: %s (binary)\n", SvPV_nolen(value));
+    } else if (lt == HEX_LITERAL) {
+      SV* value = newSV(0);
+      while (*p != '\0' && *p != symbol) {
+        char v = 0;
+        for (int i = 0; i < 2; i++) {
+          if (IS_NOT_HEX_LITERAL_CHAR(*p)) {
+            croak("Unexpected hex literal charactor:%c", *p);
+          }
+
+          char n = parse_literal_numeric(*p);
+          v <<= 4;
+          v |= n;
+          p++;
+        }
+        sv_catpvn(value, &v, 1);
+      }
+      *ret = value;
+      DEBUG_OUT("value: %s (hex)\n", SvPV_nolen(value));
+    }
+
+    // XXX: skip collatiton
+    SKIP_WSPACE(p);
+    if (IS_COLLATE(p)) {
+      p += 7;
+      SKIP_WSPACE(p);
+
+      char *mark = p;
+      SKIP_UNTIL_WSPACE(p);
+      DEBUG_OUT("collation: %.*s\n", p - mark, mark);
+    }
+
+    return p;
+  } else {
+    // normal value
+    char* mark = p;
+    while (*p != '\0' && *p != ',' && *p != ')') p++;
+
+    *ret = newSVpvn(mark, p - mark);
+    DEBUG_OUT("value: %s(normal value)\n", SvPV_nolen(*ret));
+
+    return p;
+  }
+}
+
+char parse_literal_numeric(char n) {
+  switch (n) {
+    case '0': return 0;
+    case '1': return 1;
+    case '2': return 2;
+    case '3': return 3;
+    case '4': return 4;
+    case '5': return 5;
+    case '6': return 6;
+    case '7': return 7;
+    case '8': return 8;
+    case '9': return 9;
+    case 'a': return 0x0a;
+    case 'b': return 0x0b;
+    case 'c': return 0x0c;
+    case 'd': return 0x0d;
+    case 'e': return 0x0e;
+    case 'f': return 0x0f;
+    case 'A': return 0x0A;
+    case 'B': return 0x0B;
+    case 'C': return 0x0C;
+    case 'D': return 0x0D;
+    case 'E': return 0x0E;
+    case 'F': return 0x0F;
+  }
+  return 0; // XXX: should not reach here
+}

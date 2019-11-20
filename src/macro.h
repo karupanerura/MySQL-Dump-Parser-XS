@@ -82,14 +82,14 @@
   p[3] == 'L'            \
 )
 
-#define IS__binary(p) ( \
-  p[0] == '_' &&        \
-  p[1] == 'b' &&        \
-  p[2] == 'i' &&        \
-  p[3] == 'n' &&        \
-  p[4] == 'a' &&        \
-  p[5] == 'r' &&        \
-  p[6] == 'y'           \
+#define IS_COLLATE(p) ( \
+  p[0] == 'C' &&        \
+  p[1] == 'O' &&        \
+  p[2] == 'L' &&        \
+  p[3] == 'L' &&        \
+  p[4] == 'A' &&        \
+  p[5] == 'T' &&        \
+  p[6] == 'E'           \
 )
 
 #define IS_MAYBE_KEY(p) (IS_KEY(p) || IS_INDEX(p) || IS_UNIQUE(p) || IS_PRIMARY(p))
@@ -102,3 +102,28 @@
   while (*p != '\0' && !IS_WSPACE(p)) p++;          \
 }
 
+#define IS_NOT_BINARY_LITERAL_CHAR(c) (c != '0' && c != '1')
+#define IS_NOT_HEX_LITERAL_CHAR(c) ( \
+     c != '0' \
+  && c != '1' \
+  && c != '2' \
+  && c != '3' \
+  && c != '4' \
+  && c != '5' \
+  && c != '6' \
+  && c != '7' \
+  && c != '8' \
+  && c != '9' \
+  && c != 'a' \
+  && c != 'b' \
+  && c != 'c' \
+  && c != 'd' \
+  && c != 'e' \
+  && c != 'f' \
+  && c != 'A' \
+  && c != 'B' \
+  && c != 'C' \
+  && c != 'D' \
+  && c != 'E' \
+  && c != 'F' \
+)

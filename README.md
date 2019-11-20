@@ -66,7 +66,7 @@ This method can get tables from already parsed tables only.
 ### How to get column details?
 
 Some `mysqldump` output include poor table schema information only.
-So if you just need rich table schema information, I suggest using [DBIx::Inspector](https://metacpan.org/pod/DBIx::Inspector) to solve the problem.
+So if you just need rich table schema information, I suggest using [DBIx::Inspector](https://metacpan.org/pod/DBIx%3A%3AInspector) to solve the problem.
 
 # LICENSE
 
